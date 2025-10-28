@@ -231,13 +231,7 @@ ORDER BY years_with_layoffs DESC;
 -- Overall, the data reflects how macroeconomic slowdowns, post-pandemic corrections, and funding cuts triggered massive workforce reductions worldwide.
 -- This analysis highlights the importance of sustainable hiring, risk diversification, and financial prudence for companies in volatile markets.
 
--- 💡 Future Scope
 
--- Add visualizations (Power BI / Tableau / Python / Excel) for clearer trend representation.
-
--- Use window functions to analyze cumulative layoffs or moving averages.
-
--- Correlate layoffs with funding rounds or company valuations for deeper insights.
 
 
 
