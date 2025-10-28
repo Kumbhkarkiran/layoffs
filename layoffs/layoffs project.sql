@@ -1,309 +1,245 @@
 create database world_layoffs;
 use world_layoffs;
 
--- 1 remove duplicates
--- 2)standardise the data
--- 3)null vaues or blank values
--- 4) remove any coloumn
--- 🧩 Project Objective:
--- To analyze global layoffs across industries, countries, and company stages to uncover:
+-- 🔶 Project Title:--Global Layoffs Data Analysis (2020–2023): Understanding Global Workforce Trends
 
--- How layoffs have evolved over time.
+-- Problem Statement (The “What was the problem?” part?????????)
 
--- Which industries, countries, and company stages are most affected.
+-- After the pandemic, companies across industries began mass layoffs due to funding issues, market uncertainty, and restructuring.
+-- However, there was no clear, data-driven understanding of:
+-- Which industries and countries were hit hardest
+-- Whether startup funding stage or funding amount affected layoffs
+-- How layoffs evolved over time globally
+-- So, this project aimed to analyze global layoff patterns using SQL to uncover these insights and trends.
 
--- Whether company funding and stage have any relation to layoffs.
+--  Data Cleaning & Preparation 
+ 
+--  1)Removed duplicates
 
--- How severe layoffs are (% laid off) and what trends they reveal.
+SELECT DISTINCT * FROM layoffs;
 
--- Goal:
--- Provide data-driven insights to help investors, employees, and
---  policymakers understand which sectors are at risk and
---  how company growth stage or funding impacts workforce reduction.
+-- 2)Standardized date format
+
+UPDATE layoffs 
+SET date = STR_TO_DATE(date, '%m/%d/%Y');
+SELECT date FROM layoffs LIMIT 10;
+
+-- 3)Handled NULL and blank values
+
+DELETE FROM layoffs 
+WHERE total_laid_off IS NULL OR date IS NULL;
+
+-- 4)Checked first and last recorded layoffs
+
+SELECT MIN(date), MAX(date) FROM layoffs;
+
+-- Exploratory Data Analysis (EDA)
+ 
+--  1)Total Layoffs Over Time
+SELECT YEAR(date) AS year, SUM(total_laid_off) FROM layoffs GROUP BY year;
+-- Insight:
+-- Layoffs spiked sharply in 2022–2023, mainly due to tech slowdowns and post-pandemic corrections.
+
+-- Top 10 Companies with Most Layoffs
 
 
--- Main Objective (in SQL terms):
 
--- To perform data exploration and trend analysis on global
---  layoffs — understanding which companies, industries, countries, 
---  and funding stages are most impacted by layoffs over time
-use world_layoffs;
-
-
--- 🔹 1️⃣ Total number of layoffs overall
-SELECT 
-    SUM(total_laid_off) AS total_layoffs
-FROM layoffs;
--- 🔹 2️⃣ Total layoffs per year
-SELECT 
-    EXTRACT(YEAR FROM date) AS year,
-    SUM(total_laid_off) AS total_layoffs
-FROM layoffs
-GROUP BY year
-ORDER BY year;
--- 🔹 3️⃣ Top 10 companies with the most layoffs
-SELECT 
-    company,
-    SUM(total_laid_off) AS total_layoffs
+SELECT company, SUM(total_laid_off) AS total_layoffs
 FROM layoffs
 GROUP BY company
 ORDER BY total_layoffs DESC
 LIMIT 10;
--- 🔹 4️⃣ Companies that laid off everyone (100%)
-SELECT 
-    company, 
-    industry, 
-    country, 
-    percentage_laid_off
-FROM layoffs
-WHERE percentage_laid_off = 100;
--- 🔹 5️⃣ Layoffs by industry
-SELECT 
-    industry, 
-    SUM(total_laid_off) AS total_layoffs
+
+-- Insight-:Meta, Google, Amazon, Microsoft, and Salesforce were the top contributors, each laying off tens of thousands of employees.
+-- Most belong to the Tech industry, showing that even highly profitable firms were not immune.
+
+-- Industry-wise Layoffs
+
+
+
+SELECT industry, SUM(total_laid_off) AS total_layoffs
 FROM layoffs
 GROUP BY industry
 ORDER BY total_layoffs DESC;
--- 🔹 6️⃣ Average layoff percentage by industry
-SELECT 
-    industry,
-    ROUND(AVG(percentage_laid_off),2) AS avg_percentage_laid_off
-FROM layoffs
-GROUP BY industry
-ORDER BY avg_percentage_laid_off DESC;
--- 🔹 7️⃣ Layoffs by country
-SELECT 
-    country,
-    SUM(total_laid_off) AS total_layoffs
+
+
+-- Insight:Tech and Consumer Services sectors faced the highest layoffs.
+-- Finance and Retail also saw significant cuts.
+-- Indicates a post-pandemic correction in high-growth sectors.
+
+-- Country-wise Layoffs
+SELECT country, SUM(total_laid_off) AS total_layoffs
 FROM layoffs
 GROUP BY country
 ORDER BY total_layoffs DESC;
--- 🔹 8️⃣ Average layoff percentage by country
-SELECT 
-    country,
-    ROUND(AVG(percentage_laid_off),2) AS avg_percentage_laid_off
-FROM layoffs
-GROUP BY country
-ORDER BY avg_percentage_laid_off DESC;
--- 🔹 9️⃣ Layoffs by company stage
-SELECT 
-    stage,
-    SUM(total_laid_off) AS total_layoffs,
-    ROUND(AVG(percentage_laid_off),2) AS avg_percentage_laid_off
+-- Insight-- sight: The United States accounted for the majority of global layoffs. India, UK, and Canada followed, mainly driven by global tech dependence.
+-- Reflects how U.S. tech downturns impacted worldwide operations.  
+-- Company Stage Impact
+SELECT stage, SUM(total_laid_off) AS total_layoffs, 
+       ROUND(AVG(percentage_laid_off),2) AS avg_percentage
 FROM layoffs
 GROUP BY stage
 ORDER BY total_layoffs DESC;
--- 👉 Which stage of companies (early, mid, late, post-IPO) faced the most layoffs.
--- 🔹 13️⃣ Industry-wise layoffs by country
-SELECT 
-    country,
-    industry,
-    SUM(total_laid_off) AS total_layoffs
+-- Insight:Late-stage startups and post-IPO companies had the most layoffs.
+-- Early-stage startups were relatively stable with fewer layoffs.
+-- Suggests that mature firms optimized costs, while smaller firms prioritized survival.
+
+-- Total Layoffs per Year
+
+SELECT YEAR(date) AS year,
+       SUM(total_laid_off) AS total_layoffs
 FROM layoffs
-GROUP BY country, industry
-ORDER BY total_layoffs DESC;
--- 👉 Multi-dimensional insight — which industry suffered most in which country.
--- 🔹 14️⃣ Ranking industries by total layoffs
-SELECT 
-    industry,
-    SUM(total_laid_off) AS total_layoffs,
-    DENSE_RANK() OVER (ORDER BY SUM(total_laid_off) DESC) AS rank_of_industry
+GROUP BY year
+ORDER BY year;
+-- Insight:2023 recorded the highest layoffs, indicating the aftereffects of global inflation and tech correction.
+-- 2020–2021 layoffs were pandemic-driven, while 2022–2023 were cost-optimization driven.
+-- Month-wise Trend Analysis
+SELECT MONTHNAME(date) AS month,
+       SUM(total_laid_off) AS total_layoffs
 FROM layoffs
-GROUP BY industry;
--- 👉 Ranks industries by their total layoffs count.
--- 🔹 15️⃣ Average layoffs per company
-SELECT 
-    company,
-    ROUND(AVG(total_laid_off),2) AS avg_layoffs,
-    ROUND(AVG(percentage_laid_off),2) AS avg_percentage
-FROM layoffs
-GROUP BY company
-ORDER BY avg_layoffs DESC;
--- 🔹 16️⃣ Top 5 countries by average % laid off
-SELECT 
-    country,
-    ROUND(AVG(percentage_laid_off),2) AS avg_percentage_laid_off
+GROUP BY month
+ORDER BY monthname(date);
+-- Insight: January to March had the highest layoffs — typical for fiscal year restructuring.
+--  Drop observed from June to September, indicating market stabilization
+
+-- Top 10 Countries by Number of Layoff Events
+
+SELECT country, COUNT(*) AS layoff_events
 FROM layoffs
 GROUP BY country
-ORDER BY avg_percentage_laid_off DESC
-LIMIT 5;
--- 🔹 17️⃣ Total layoffs by location (city-wise)
-SELECT 
-    location,
-    SUM(total_laid_off) AS total_layoffs
-FROM layoffs
-GROUP BY location
-ORDER BY total_layoffs DESC
+ORDER BY layoff_events DESC
 LIMIT 10;
--- 🔹 18️⃣ Rolling Total by Year & Industry (Advanced)
-SELECT 
-    EXTRACT(YEAR FROM date) AS year,
-    industry,
-    SUM(SUM(total_laid_off)) OVER (PARTITION BY industry ORDER BY EXTRACT(YEAR FROM date)) AS cumulative_layoffs
-FROM layoffs
-GROUP BY year, industry
-ORDER BY industry, year;
+-- Insight:U.S., India, and U.K. led not only in layoffs count but also in number of events, showing widespread restructuring.
+-- Emerging markets were less affected.
 
--- 🔹 19️⃣ Average funding per industry
-SELECT 
-    industry,
-    ROUND(AVG(funds_raised_millions),2) AS avg_funding
+-- Average % of Workforce Laid Off by Industry
+
+SELECT industry, ROUND(AVG(percentage_laid_off),2) AS avg_percent
+FROM layoffs
+WHERE percentage_laid_off IS NOT NULL
+GROUP BY industry
+ORDER BY avg_percent DESC;
+
+
+-- Insight:Crypto and Fintech industries had the highest layoff percentage, some above 50%.
+-- Reflects volatility and overhiring during growth phases.
+
+#Top 10 Industries by Number of Companies Affected
+
+
+SELECT industry, COUNT(DISTINCT company) AS affected_companies
 FROM layoffs
 GROUP BY industry
-ORDER BY avg_funding DESC;
--- 🔹 20️⃣ Companies with High Funding but High Layoffs
-SELECT 
-    company,
-    industry,
-    country,
-    funds_raised_millions,
-    total_laid_off
+ORDER BY affected_companies DESC
+LIMIT 10;
+
+
+-- insight:Tech, Retail, and Finance had the widest spread — most companies affected.
+-- Healthcare and Education showed resilience.
+ -- Average Layoff per Country
+
+SELECT country, ROUND(AVG(total_laid_off),0) AS avg_layoff
+FROM layoffs
+GROUP BY country
+ORDER BY avg_layoff DESC
+LIMIT 10;
+
+
+-- Insight:U.S. and Canada had the highest average layoff count per event, indicating large corporate cuts.
+-- India and UK showed smaller but more frequent layoffs
+-- Companies with Most Frequent Layoffs
+
+
+
+SELECT company, COUNT(*) AS layoff_events
+FROM layoffs
+GROUP BY company
+ORDER BY layoff_events DESC
+LIMIT 10;
+
+
+-- Insight:Amazon, Microsoft, and Byjus appeared multiple times — indicating staggered layoffs over months.
+-- Suggests phased restructuring instead of single layoffs.
+
+
+
+-- Companies with High Funding but High Layoffs
+SELECT company, industry, funds_raised_millions, total_laid_off
 FROM layoffs
 WHERE funds_raised_millions > 500
 ORDER BY total_laid_off DESC
 LIMIT 10;
-select * from  layoffs;
--- Remove duplicates
+-- Insight: Even well-funded companies (like Coinbase, Uber, or Robinhood) laid off heavily — showing that capital ≠ stability.
 
-SELECT DISTINCT * 
-FROM layoffs;
-
-
---  Total Layoffs Per Year
-SELECT 
-    YEAR(STR_TO_DATE(date, '%m/%d/%Y')) AS year,
-    SUM(total_laid_off) AS total_layoffs
+-- Industries with Lowest Average Layoff %
+SELECT industry, ROUND(AVG(percentage_laid_off),2) AS avg_percent
 FROM layoffs
-WHERE date IS NOT NULL
-GROUP BY year
-ORDER BY year;
--- c) Handle NULL values
-DELETE FROM layoffs WHERE total_laid_off IS NULL OR date IS NULL;
-
-
--- 🧭 5️⃣ First and Last recorded layoff date
-SELECT 
-    MIN(STR_TO_DATE(date, '%m/%d/%Y')) AS first_layoff,
-    MAX(STR_TO_DATE(date, '%m/%d/%Y')) AS last_layoff
-FROM layoffs;
--- 🧭 6️⃣ Companies with layoffs in the most recent year
-SELECT 
-    company, 
-    SUM(total_laid_off) AS total_layoffs
+WHERE percentage_laid_off IS NOT NULL
+GROUP BY industry
+ORDER BY avg_percent ASC;
+ -- Insight:Industries like Healthcare, Energy, and Manufacturing showed more stability and lower average layoffs.
+ 
+ -- Top Locations (City-wise)
+SELECT location, SUM(total_laid_off) AS total_layoffs
 FROM layoffs
-WHERE YEAR(STR_TO_DATE(date, '%m/%d/%Y')) = (
-    SELECT MAX(YEAR(STR_TO_DATE(date, '%m/%d/%Y'))) FROM layoffs
-)
-GROUP BY company
+GROUP BY location
 ORDER BY total_layoffs DESC
 LIMIT 10;
--- 🧭 7️⃣ Year-over-year layoff growth
-WITH yearly AS (
-    SELECT 
-        YEAR(STR_TO_DATE(date, '%m/%d/%Y')) AS year,
-        SUM(total_laid_off) AS total_layoffs
-    FROM layoffs
-    GROUP BY year
-)
-SELECT 
-    year,
-    total_layoffs,
-    total_layoffs - LAG(total_layoffs) OVER (ORDER BY year) AS change_from_last_year
-FROM yearly;
--- 🧭 8️⃣ Days with the highest layoffs (peak events)
-SELECT 
-    STR_TO_DATE(date, '%m/%d/%Y') AS layoff_date,
-    SUM(total_laid_off) AS total_layoffs
+
+
+--  Insight:bay area, seattle, and Bangalore were top cities — reflecting major global tech hubs.
+
+-- Industries Affected in Multiple Countries
+SELECT industry, COUNT(DISTINCT country) AS countries_affected
 FROM layoffs
-GROUP BY layoff_date
-ORDER BY total_layoffs DESC
-LIMIT 10;
--- 🧭 10️⃣ Count of layoffs per weekday
-SELECT 
-    DAYNAME(STR_TO_DATE(date, '%m/%d/%Y')) AS weekday,
-    COUNT(*) AS number_of_layoff_events
+GROUP BY industry
+ORDER BY countries_affected DESC;
+--  Insight:The finance industry was globally impacted — spanning 20+ countries — proving its interconnectedness.
+ -- Most Common Days for Layoffs
+SELECT DAYNAME(date) AS weekday,
+       COUNT(*) AS layoff_events
 FROM layoffs
 GROUP BY weekday
-ORDER BY number_of_layoff_events DESC;
--- 📊 Key Insights:
+ORDER BY layoff_events DESC;
+ -- Insight:wednesday  and tuesday were peak days
 
--- Yearly Trend:
+-- Companies with Consistent Layoffs (Multiple Years)
+SELECT company, COUNT(DISTINCT YEAR(DATE)) AS years_with_layoffs
+FROM layoffs
+GROUP BY company
+HAVING years_with_layoffs > 1
+ORDER BY years_with_layoffs DESC;
 
--- Layoffs increased sharply in 2022–2023, showing post-pandemic and tech slowdown effects.
+-- 📍 Insight: -- Some firms had layoffs year after year (e.g.bounce,delivey hero), showing recurring operational adjustments.
 
--- Monthly & Quarterly Trend:
+-- Conclusion
 
--- Most layoffs happen in Q1 (Jan–Mar), especially in March — a common time for company restructuring.
+-- This project analyzed global layoffs data to understand trends across companies, industries, countries, and funding stages.
 
--- Recent Year:
+-- Through extensive SQL-based data cleaning and exploratory analysis, several clear patterns emerged:
 
--- 2023
---  saw maximum layoffs, mainly by big tech firms like Google, Meta, and Amazon.
--- Peak Days:
+-- 🔹 Layoffs peaked in 2022–2023, especially among tech and consumer service companies.
 
--- Specific dates like March 2023 had major layoff waves.
+-- 🔹 Big tech firms such as Meta, Google, Amazon, Microsoft, and Salesforce led the layoff wave.
 
--- Weekday Pattern:
+-- 🔹 The United States accounted for the majority of global layoffs, followed by India and the UK.
 
--- Layoffs are often announced on Mondays or Fridays for strategic reasons.
+-- 🔹 Late-stage and post-IPO startups faced higher layoffs than early-stage ones, showing that growth maturity often brings cost pressure.
 
+-- 🔹 March 2023 witnessed the largest single-month layoffs, commonly announced on Mondays and Fridays.
 
+-- Overall, the data reflects how macroeconomic slowdowns, post-pandemic corrections, and funding cuts triggered massive workforce reductions worldwide.
+-- This analysis highlights the importance of sustainable hiring, risk diversification, and financial prudence for companies in volatile markets.
 
+-- 💡 Future Scope
 
+-- Add visualizations (Power BI / Tableau / Python / Excel) for clearer trend representation.
 
+-- Use window functions to analyze cumulative layoffs or moving averages.
 
-
-
-
-
-
-
-
-
-
-
-
-
+-- Correlate layoffs with funding rounds or company valuations for deeper insights.
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
--- use world_layoffs;
-
--- CREATE TABLE `layoffs_staging2` (
---   `company` text,
---   `location` text,
---   `industry` text,
---   `total_laid_off` int DEFAULT NULL,
---   `percentage_laid_off` text,
---   `date` text,
---   `stage` text,
---   `country` text,
---   `funds_raised_millions` int DEFAULT NULL
--- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
--- select * from layoffs_staging2;
--- insert into  layoffs_staging2 select *  , row_number() over ( partition by company,industry ,total_laid_off,percentage_laid_off,'date')as
---  row_num
---  from layoffs_staging;
-
-
-
-
-
-
-
-
+    
