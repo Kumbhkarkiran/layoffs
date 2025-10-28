@@ -63,16 +63,15 @@ GROUP BY industry
 ORDER BY total_layoffs DESC;
 
 
--- Insight:Tech and Consumer Services sectors faced the highest layoffs.
--- Finance and Retail also saw significant cuts.
--- Indicates a post-pandemic correction in high-growth sectors.
+-- Insight:consumer and retail Services sectors faced the highest layoffs.
+.
 
 -- Country-wise Layoffs
 SELECT country, SUM(total_laid_off) AS total_layoffs
 FROM layoffs
 GROUP BY country
 ORDER BY total_layoffs DESC;
--- Insight-- sight: The United States accounted for the majority of global layoffs. India, UK, and Canada followed, mainly driven by global tech dependence.
+-- Insight-- sight: The United States accounted for the majority of global layoffs. India, neatherlands , and sweden followed, mainly driven by global tech dependence.
 -- Reflects how U.S. tech downturns impacted worldwide operations.  
 -- Company Stage Impact
 SELECT stage, SUM(total_laid_off) AS total_layoffs, 
@@ -80,9 +79,7 @@ SELECT stage, SUM(total_laid_off) AS total_layoffs,
 FROM layoffs
 GROUP BY stage
 ORDER BY total_layoffs DESC;
--- Insight:Late-stage startups and post-IPO companies had the most layoffs.
--- Early-stage startups were relatively stable with fewer layoffs.
--- Suggests that mature firms optimized costs, while smaller firms prioritized survival.
+-- Insight: post-IPO companies had the most layoffs.
 
 -- Total Layoffs per Year
 
@@ -99,8 +96,8 @@ SELECT MONTHNAME(date) AS month,
 FROM layoffs
 GROUP BY month
 ORDER BY monthname(date);
--- Insight: January to March had the highest layoffs — typical for fiscal year restructuring.
---  Drop observed from June to September, indicating market stabilization
+-- Insight: november had the highest layoffs — typical for fiscal year restructuring.
+--  Drop observed in September, indicating market stabilization
 
 -- Top 10 Countries by Number of Layoff Events
 
@@ -109,7 +106,7 @@ FROM layoffs
 GROUP BY country
 ORDER BY layoff_events DESC
 LIMIT 10;
--- Insight:U.S., India, and U.K. led not only in layoffs count but also in number of events, showing widespread restructuring.
+-- Insight:U.S., India, and canada. led not only in layoffs count but also in number of events, showing widespread restructuring.
 -- Emerging markets were less affected.
 
 -- Average % of Workforce Laid Off by Industry
@@ -134,7 +131,7 @@ ORDER BY affected_companies DESC
 LIMIT 10;
 
 
--- insight:Tech, Retail, and Finance had the widest spread — most companies affected.
+-- insight:healthcare, Retail, and Finance had the widest spread — most companies affected.
 -- Healthcare and Education showed resilience.
  -- Average Layoff per Country
 
@@ -145,8 +142,8 @@ ORDER BY avg_layoff DESC
 LIMIT 10;
 
 
--- Insight:U.S. and Canada had the highest average layoff count per event, indicating large corporate cuts.
--- India and UK showed smaller but more frequent layoffs
+-- Insight:netherlands . and Canada had the highest average layoff count per event, indicating large corporate cuts.
+
 -- Companies with Most Frequent Layoffs
 
 
@@ -158,7 +155,7 @@ ORDER BY layoff_events DESC
 LIMIT 10;
 
 
--- Insight:Amazon, Microsoft, and Byjus appeared multiple times — indicating staggered layoffs over months.
+-- Insight:loft, uber, and swiggy appeared multiple times — indicating staggered layoffs over months.
 -- Suggests phased restructuring instead of single layoffs.
 
 
@@ -169,7 +166,7 @@ FROM layoffs
 WHERE funds_raised_millions > 500
 ORDER BY total_laid_off DESC
 LIMIT 10;
--- Insight: Even well-funded companies (like Coinbase, Uber, or Robinhood) laid off heavily — showing that capital ≠ stability.
+-- Insight: Even well-funded companies (like meta,ericsson) laid off heavily — showing that capital ≠ stability.
 
 -- Industries with Lowest Average Layoff %
 SELECT industry, ROUND(AVG(percentage_laid_off),2) AS avg_percent
@@ -226,10 +223,8 @@ ORDER BY years_with_layoffs DESC;
 
 -- 🔹 Late-stage and post-IPO startups faced higher layoffs than early-stage ones, showing that growth maturity often brings cost pressure.
 
--- 🔹 March 2023 witnessed the largest single-month layoffs, commonly announced on Mondays and Fridays.
+-- 🔹 november 2023 witnessed the largest single-month layoffs, commonly announced on Mondays and Fridays.
 
--- Overall, the data reflects how macroeconomic slowdowns, post-pandemic corrections, and funding cuts triggered massive workforce reductions worldwide.
--- This analysis highlights the importance of sustainable hiring, risk diversification, and financial prudence for companies in volatile markets.
 
 
 
